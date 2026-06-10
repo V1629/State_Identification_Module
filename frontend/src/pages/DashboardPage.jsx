@@ -3,6 +3,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
+import { useAnalyze } from '../hooks/useAnalyze';
+import { useEmaScores } from '../hooks/useEmaScores';
+import { useStates } from '../hooks/useStates';
 
 const chartData = [
   { time: '00:00', shortTerm: 5.2, midTerm: 5.0, longTerm: 5.1 },
@@ -17,6 +20,23 @@ const chartData = [
 
 export default function DashboardPage() {
   const [message, setMessage] = useState('');
+  const { analyze, loading: analyzing, error: analyzeError, result } = useAnalyze();
+  const { states, loading: statesLoading } = useStates();
+  const { data, chartData: emaChartData, loading: chartLoading } = useEmaScores();
+
+  const handleAnalyze = async () => {
+    if (!message.trim()) {
+      alert('Please enter a message to analyze');
+      return;
+    }
+
+    try {
+      await analyze(message);
+      setMessage(''); // Clear input after successful analysis
+    } catch (err) {
+      console.error('Analysis failed:', err);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[#0f1117]">
