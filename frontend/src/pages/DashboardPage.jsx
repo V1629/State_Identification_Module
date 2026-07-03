@@ -83,7 +83,9 @@ export default function DashboardPage() {
             {/* Short-Term State */}
             <Card className="bg-[#1a1d27] border-slate-800 p-4">
               <p className="text-slate-400 text-sm mb-3">Short-Term State</p>
-              <p className="text-white text-2xl font-bold mb-3">Neutral</p>
+              <p className="text-white text-2xl font-bold mb-3">
+                 {result?.short_term_state || states?.short_term || 'Neutral'}
+              </p>
               <div className="inline-block bg-indigo-500/10 text-indigo-400 text-xs rounded-full px-3 py-1 border border-indigo-500/20">
                 Current
               </div>
@@ -92,7 +94,9 @@ export default function DashboardPage() {
             {/* Mid-Term State */}
             <Card className="bg-[#1a1d27] border-slate-800 p-4">
               <p className="text-slate-400 text-sm mb-3">Mid-Term State</p>
-              <p className="text-white text-2xl font-bold mb-3">Stable</p>
+              <p className="text-white text-2xl font-bold mb-3">
+  {result?.mid_term_state || states?.mid_term || 'Stable'}
+</p>
               <div className="inline-block bg-emerald-500/10 text-emerald-400 text-xs rounded-full px-3 py-1 border border-emerald-500/20">
                 Trending
               </div>
@@ -101,7 +105,9 @@ export default function DashboardPage() {
             {/* Long-Term State */}
             <Card className="bg-[#1a1d27] border-slate-800 p-4">
               <p className="text-slate-400 text-sm mb-3">Long-Term State</p>
-              <p className="text-white text-2xl font-bold mb-3">Positive</p>
+              <p className="text-white text-2xl font-bold mb-3">
+  {result?.long_term_state || states?.long_term || 'Positive'}
+</p>
               <div className="inline-block bg-rose-500/10 text-rose-400 text-xs rounded-full px-3 py-1 border border-rose-500/20">
                 Overall
               </div>
@@ -163,15 +169,29 @@ export default function DashboardPage() {
                 placeholder="Enter message to analyze..."
                 className="bg-[#0d0f14] border-slate-700 text-white placeholder-slate-500 mb-3"
               />
-              <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white">
-                Analyze
+              <Button 
+                onClick={handleAnalyze}
+                disabled={analyzing}
+                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white"
+              >
+                {analyzing ? 'Analyzing...' : 'Analyze'}
               </Button>
+              {analyzeError && (
+                <p className="text-rose-400 text-xs mt-2">{analyzeError}</p>
+              )}
+              {result && (
+                <div className="mt-3 p-3 bg-[#0d0f14] rounded-lg border border-slate-700 text-xs text-slate-300">
+                  <pre>{JSON.stringify(result, null, 2)}</pre>
+                </div>
+              )}
             </Card>
 
             {/* Significance Score Card */}
             <Card className="bg-[#1a1d27] border-slate-800 p-4 flex flex-col justify-center">
               <label className="text-slate-400 text-sm block mb-4">Significance Score</label>
-              <p className="text-5xl font-bold text-white mb-4">7.4</p>
+              <p className="text-5xl font-bold text-white mb-4">
+                  {result?.significance_score?.toFixed(1) || '—'}
+              </p>
               <div className="inline-block w-fit bg-rose-500/10 text-rose-400 text-xs rounded-full px-3 py-1 border border-rose-500/20 mb-4">
                 High Significance
               </div>

@@ -18,7 +18,8 @@ from .config import settings
 app = FastAPI(
     title="State Identification Module API",
     description="Emotional state analysis and tracking API",
-    version="1.0.0"
+    version="1.0.0",
+    debug = True
 )
 
 # CORS Middleware

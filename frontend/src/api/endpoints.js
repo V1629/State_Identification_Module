@@ -12,7 +12,7 @@ import client from './client';
  */
 export const analyzeMessage = async (message, userId = 'default_user') => {
   try {
-    const response = await client.post('/analyze', {
+    const response = await client.post('/api/analyze', {
       message,
       user_id: userId,
     });
@@ -28,7 +28,7 @@ export const analyzeMessage = async (message, userId = 'default_user') => {
  */
 export const getCurrentStates = async (userId = 'default_user') => {
   try {
-    const response = await client.get('/states', {
+    const response = await client.get('/api/states', {
       params: { user_id: userId },
     });
     return response.data;
@@ -43,7 +43,7 @@ export const getCurrentStates = async (userId = 'default_user') => {
  */
 export const getEMATimeline = async (userId = 'default_user', days = 1) => {
   try {
-    const response = await client.get('/ema-scores', {
+    const response = await client.get('/api/ema-scores', {
       params: { user_id: userId, days },
     });
     return response.data;
@@ -58,7 +58,7 @@ export const getEMATimeline = async (userId = 'default_user', days = 1) => {
  */
 export const resetUserState = async (userId = 'default_user') => {
   try {
-    const response = await client.post('/reset', null, {
+    const response = await client.post('/api/reset', null, {
       params: { user_id: userId },
     });
     return response.data;

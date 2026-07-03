@@ -76,6 +76,15 @@ class StatesResponse(BaseModel):
     mid_term_score: float
     long_term_score: float
 
+#A helper function
+def state_to_label(state) -> str:
+    """Convert state distribution dict to single label string."""
+    if isinstance(state, dict) and state:
+        return max(state.items(), key=lambda x: x[1])[0]
+    if isinstance(state, str):
+        return state
+    return "Neutral"
+
 
 # ==================== Endpoints ====================
 
@@ -83,35 +92,40 @@ class StatesResponse(BaseModel):
 async def analyze_message(request: AnalyzeRequest):
     """
     Analyze a message for emotional state
-    
-    - Processes message through emotional detector
-    - Updates temporal states
-    - Calculates significance score
-    - Returns all emotional analysis
     """
     try:
         orchestrator = get_orchestrator()
-        
+
         if not request.message or not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
-        # Analyze message (this calls core logic)
-        result = orchestrator.analyze_message(
-            message=request.message,
-            user_id=request.user_id
+
+        # ✅ Correct method on EmotionalStateOrchestrator
+        result = orchestrator.process_user_message(
+        user_id=request.user_id,
+        message=request.message
         )
-        
+
+        # result is IncidentAnalysis object (not dict)
+        profile = orchestrator.user_profiles.get(request.user_id)
+
+        short_state = state_to_label(getattr(profile, "short_term_state", "Neutral")) if profile else "Neutral"
+        mid_state = state_to_label(getattr(profile, "mid_term_state", "Stable")) if profile else "Stable"
+        long_state = state_to_label(getattr(profile, "long_term_state", "Positive")) if profile else "Positive"
+
         return AnalyzeResponse(
             message=request.message,
-            short_term_state=result.get("short_term_state", "Neutral"),
-            mid_term_state=result.get("mid_term_state", "Stable"),
-            long_term_state=result.get("long_term_state", "Positive"),
-            significance_score=result.get("significance_score", 5.0),
-            emotions=result.get("emotions", {}),
+            short_term_state=short_state,
+            mid_term_state=mid_state,
+            long_term_state=long_state,
+            significance_score=float(getattr(result, "impact_score", 0.0)),
+            emotions=getattr(result, "emotions_detected", {}) or {},
             timestamp=datetime.now().isoformat()
         )
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
+        # keep error visible to frontend + logs
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
