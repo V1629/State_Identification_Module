@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Card } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import { GlassCard } from '../components/ui/GlassCard';
+import { GlassButton } from '../components/ui/GlassButton';
 import { Textarea } from '../components/ui/textarea';
 import { useAnalyze } from '../hooks/useAnalyze';
 import { useEmaScores } from '../hooks/useEmaScores';
@@ -39,164 +39,208 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#0f1117]">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-screen w-60 bg-[#0d0f14] border-r border-slate-800 flex flex-col">
+    <div className="flex h-screen mesh-bg text-slate-100 overflow-hidden font-sans">
+      {/* Sidebar - Glassmorphism */}
+      <div className="fixed left-0 top-0 h-screen w-64 glass-panel border-l-0 rounded-l-none border-y-0 bg-white/5 dark:bg-[#0f1117]/30 flex flex-col z-20">
         {/* Header */}
-        <div className="px-6 pt-6 pb-8">
-          <h1 className="text-white font-bold text-xl">SIM</h1>
-          <p className="text-slate-500 text-xs">State Identification</p>
+        <div className="px-6 pt-8 pb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+              <div className="w-3 h-3 bg-indigo-400 rounded-full animate-pulse"></div>
+            </div>
+            <h1 className="text-white font-bold text-2xl tracking-tight">SIM</h1>
+          </div>
+          <p className="text-slate-400/80 text-xs font-medium uppercase tracking-widest pl-1">State Identification</p>
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 space-y-2">
-          <div className="mx-3 px-3 py-2 bg-indigo-500/10 text-indigo-400 rounded-lg text-sm">
+        <nav className="flex-1 space-y-2 px-3">
+          <div className="px-4 py-3 bg-indigo-500/15 text-indigo-200 rounded-xl text-sm font-medium border border-indigo-500/20 shadow-inner backdrop-blur-sm transition-all">
             Dashboard
           </div>
-          <div className="mx-3 px-3 py-2 text-slate-400 text-sm cursor-pointer hover:text-slate-300">
+          <div className="px-4 py-3 text-slate-400 text-sm cursor-pointer hover:bg-white/5 hover:text-slate-200 rounded-xl transition-all">
             History
           </div>
-          <div className="mx-3 px-3 py-2 text-slate-400 text-sm cursor-pointer hover:text-slate-300">
+          <div className="px-4 py-3 text-slate-400 text-sm cursor-pointer hover:bg-white/5 hover:text-slate-200 rounded-xl transition-all">
             Configuration
           </div>
         </nav>
 
         {/* Footer Version */}
-        <div className="px-6 pb-6 text-slate-600 text-xs">v1.0.0</div>
+        <div className="px-6 pb-8 text-slate-500/70 text-xs font-medium">v1.0.0</div>
       </div>
 
       {/* Main Content */}
-      <div className="ml-60 w-[calc(100%-240px)] overflow-y-auto">
+      <div className="ml-64 w-[calc(100%-256px)] h-full overflow-y-auto relative z-10 custom-scrollbar">
         {/* Topbar */}
-        <div className="border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 bg-[#0f1117]/95 backdrop-blur">
-          <h2 className="text-white font-semibold text-lg">Emotional State Dashboard</h2>
-          <div className="flex items-center gap-2 bg-green-500/10 text-green-400 text-xs rounded-full px-3 py-1 border border-green-500/20">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+        <div className="sticky top-0 z-30 px-8 py-5 flex justify-between items-center glass-panel border-x-0 border-t-0 rounded-none bg-white/5 dark:bg-[#0f1117]/30 backdrop-blur-xl">
+          <h2 className="text-white font-semibold text-xl tracking-tight">Emotional State Dashboard</h2>
+          <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-300 text-xs font-medium rounded-full px-4 py-1.5 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.8)]"></div>
             System Active
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-8 space-y-6 max-w-7xl mx-auto">
           {/* Section 1: Stat Cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Short-Term State */}
-            <Card className="bg-[#1a1d27] border-slate-800 p-4">
-              <p className="text-slate-400 text-sm mb-3">Short-Term State</p>
-              <p className="text-white text-2xl font-bold mb-3">
-                 {result?.short_term_state || states?.short_term || 'Neutral'}
-              </p>
-              <div className="inline-block bg-indigo-500/10 text-indigo-400 text-xs rounded-full px-3 py-1 border border-indigo-500/20">
+            <GlassCard className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col justify-between">
+              <div>
+                <p className="text-slate-400/80 text-sm font-medium uppercase tracking-wider mb-2">Short-Term State</p>
+                <p className="text-white text-3xl font-bold mb-4 tracking-tight">
+                  {result?.short_term_state || states?.short_term || 'Neutral'}
+                </p>
+              </div>
+              <div className="inline-flex w-fit items-center bg-indigo-500/15 text-indigo-300 text-xs font-medium rounded-full px-3 py-1 border border-indigo-500/20">
                 Current
               </div>
-            </Card>
+            </GlassCard>
 
             {/* Mid-Term State */}
-            <Card className="bg-[#1a1d27] border-slate-800 p-4">
-              <p className="text-slate-400 text-sm mb-3">Mid-Term State</p>
-              <p className="text-white text-2xl font-bold mb-3">
-  {result?.mid_term_state || states?.mid_term || 'Stable'}
-</p>
-              <div className="inline-block bg-emerald-500/10 text-emerald-400 text-xs rounded-full px-3 py-1 border border-emerald-500/20">
+            <GlassCard className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col justify-between">
+              <div>
+                <p className="text-slate-400/80 text-sm font-medium uppercase tracking-wider mb-2">Mid-Term State</p>
+                <p className="text-white text-3xl font-bold mb-4 tracking-tight">
+                  {result?.mid_term_state || states?.mid_term || 'Stable'}
+                </p>
+              </div>
+              <div className="inline-flex w-fit items-center bg-emerald-500/15 text-emerald-300 text-xs font-medium rounded-full px-3 py-1 border border-emerald-500/20">
                 Trending
               </div>
-            </Card>
+            </GlassCard>
 
             {/* Long-Term State */}
-            <Card className="bg-[#1a1d27] border-slate-800 p-4">
-              <p className="text-slate-400 text-sm mb-3">Long-Term State</p>
-              <p className="text-white text-2xl font-bold mb-3">
-  {result?.long_term_state || states?.long_term || 'Positive'}
-</p>
-              <div className="inline-block bg-rose-500/10 text-rose-400 text-xs rounded-full px-3 py-1 border border-rose-500/20">
+            <GlassCard className="animate-in fade-in slide-in-from-bottom-4 duration-1000 flex flex-col justify-between">
+              <div>
+                <p className="text-slate-400/80 text-sm font-medium uppercase tracking-wider mb-2">Long-Term State</p>
+                <p className="text-white text-3xl font-bold mb-4 tracking-tight">
+                  {result?.long_term_state || states?.long_term || 'Positive'}
+                </p>
+              </div>
+              <div className="inline-flex w-fit items-center bg-rose-500/15 text-rose-300 text-xs font-medium rounded-full px-3 py-1 border border-rose-500/20">
                 Overall
               </div>
-            </Card>
+            </GlassCard>
           </div>
 
           {/* Section 2: EMA Score Chart */}
-          <Card className="bg-[#1a1d27] border-slate-800 p-4">
-            <h3 className="text-white font-semibold text-sm mb-4">EMA Score Timeline</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-                <XAxis dataKey="time" stroke="#64748b" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#64748b" style={{ fontSize: '12px' }} domain={[0, 10]} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0d0f14',
-                    border: '1px solid #2a2d3a',
-                    borderRadius: '6px',
-                  }}
-                  labelStyle={{ color: '#e2e8f0' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="shortTerm"
-                  stroke="#6366f1"
-                  dot={false}
-                  strokeWidth={2}
-                  name="Short-Term"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="midTerm"
-                  stroke="#10b981"
-                  dot={false}
-                  strokeWidth={2}
-                  name="Mid-Term"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="longTerm"
-                  stroke="#f43f5e"
-                  dot={false}
-                  strokeWidth={2}
-                  name="Long-Term"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
+          <GlassCard className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-100">
+            <h3 className="text-white font-semibold text-lg tracking-tight mb-6">EMA Score Timeline</h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="rgba(255,255,255,0.4)" 
+                    style={{ fontSize: '12px', fontWeight: 500 }} 
+                    tickLine={false}
+                    axisLine={false}
+                    dy={10}
+                  />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.4)" 
+                    style={{ fontSize: '12px', fontWeight: 500 }} 
+                    domain={[0, 10]} 
+                    tickLine={false}
+                    axisLine={false}
+                    dx={-10}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(15, 17, 23, 0.8)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                    }}
+                    itemStyle={{ fontWeight: 500 }}
+                    labelStyle={{ color: '#94a3b8', marginBottom: '4px', fontWeight: 600 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="shortTerm"
+                    stroke="#818cf8"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: '#818cf8', strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: '#fff', stroke: '#818cf8', strokeWidth: 2 }}
+                    name="Short-Term"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="midTerm"
+                    stroke="#34d399"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: '#34d399', strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: '#fff', stroke: '#34d399', strokeWidth: 2 }}
+                    name="Mid-Term"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="longTerm"
+                    stroke="#fb7185"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: '#fb7185', strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: '#fff', stroke: '#fb7185', strokeWidth: 2 }}
+                    name="Long-Term"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
 
           {/* Section 3: Two Columns */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
             {/* Message Input Card */}
-            <Card className="bg-[#1a1d27] border-slate-800 p-4">
-              <label className="text-slate-400 text-sm block mb-3">Input Message</label>
+            <GlassCard className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+              <label className="text-slate-300 font-medium text-sm block mb-4">Analyze New Interaction</label>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Enter message to analyze..."
-                className="bg-[#0d0f14] border-slate-700 text-white placeholder-slate-500 mb-3"
+                placeholder="Enter conversation text or context to analyze emotional state..."
+                className="bg-black/20 border-white/10 text-white placeholder-slate-500 mb-5 min-h-[120px] rounded-xl focus:border-indigo-500/50 focus:ring-indigo-500/20 resize-none glass-panel"
               />
-              <Button 
+              <GlassButton 
                 onClick={handleAnalyze}
                 disabled={analyzing}
-                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white"
+                className="w-full"
               >
-                {analyzing ? 'Analyzing...' : 'Analyze'}
-              </Button>
+                {analyzing ? 'Processing Analysis...' : 'Run Analysis'}
+              </GlassButton>
               {analyzeError && (
-                <p className="text-rose-400 text-xs mt-2">{analyzeError}</p>
+                <p className="text-rose-400 text-sm mt-3 font-medium bg-rose-500/10 px-3 py-2 rounded-lg border border-rose-500/20">{analyzeError}</p>
               )}
               {result && (
-                <div className="mt-3 p-3 bg-[#0d0f14] rounded-lg border border-slate-700 text-xs text-slate-300">
-                  <pre>{JSON.stringify(result, null, 2)}</pre>
+                <div className="mt-5 p-4 bg-black/30 rounded-xl border border-white/5 text-sm text-slate-300 overflow-x-auto max-h-[200px] custom-scrollbar glass-panel">
+                  <pre className="font-mono text-xs text-indigo-200">{JSON.stringify(result, null, 2)}</pre>
                 </div>
               )}
-            </Card>
+            </GlassCard>
 
             {/* Significance Score Card */}
-            <Card className="bg-[#1a1d27] border-slate-800 p-4 flex flex-col justify-center">
-              <label className="text-slate-400 text-sm block mb-4">Significance Score</label>
-              <p className="text-5xl font-bold text-white mb-4">
-                  {result?.significance_score?.toFixed(1) || '—'}
-              </p>
-              <div className="inline-block w-fit bg-rose-500/10 text-rose-400 text-xs rounded-full px-3 py-1 border border-rose-500/20 mb-4">
-                High Significance
+            <GlassCard className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 flex flex-col justify-center items-center text-center relative overflow-hidden group">
+              {/* Subtle background glow effect */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-rose-500/20 rounded-full blur-[60px] group-hover:bg-rose-500/30 transition-all duration-700"></div>
+              
+              <div className="relative z-10">
+                <label className="text-slate-400/80 text-sm font-medium uppercase tracking-wider block mb-6">Significance Score</label>
+                <div className="flex items-baseline justify-center gap-1 mb-6">
+                  <p className="text-7xl font-bold text-white tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                    {result?.significance_score?.toFixed(1) || '—'}
+                  </p>
+                  <span className="text-2xl text-slate-500 font-medium">/10</span>
+                </div>
+                <div className="inline-flex items-center bg-rose-500/15 text-rose-300 text-sm font-medium rounded-full px-4 py-1.5 border border-rose-500/30 mb-6 shadow-[0_0_15px_rgba(244,63,94,0.15)]">
+                  <div className="w-2 h-2 bg-rose-400 rounded-full mr-2"></div>
+                  High Significance
+                </div>
+                <p className="text-slate-400 text-sm max-w-[250px] mx-auto leading-relaxed">
+                  Score above 7.0 indicates a critical emotional shift in the user's state.
+                </p>
               </div>
-              <p className="text-slate-500 text-sm">Score above 7.0 indicates a critical emotional shift</p>
-            </Card>
+            </GlassCard>
           </div>
         </div>
       </div>

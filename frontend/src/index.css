@@ -128,3 +128,38 @@
     @apply font-sans;
     }
 }
+
+@layer components {
+  .glass-panel {
+    @apply backdrop-blur-[16px] saturate-[180%] bg-white/10 dark:bg-[#121214]/45 border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.18)] rounded-2xl;
+  }
+
+  .mesh-bg {
+    @apply bg-[#0f1117];
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(225,39%,30%,0.3) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(339,49%,30%,0.3) 0, transparent 50%);
+  }
+}
+
+@layer utilities {
+  .glass-glare {
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-glare::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: skewX(-20deg);
+    transition: all 0.7s ease;
+  }
+  .glass-glare:hover::before {
+    left: 150%;
+  }
+}

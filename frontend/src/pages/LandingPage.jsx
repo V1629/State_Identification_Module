@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Lightfall from '../components/Lightfall';
+import { GlassButton } from '../components/ui/GlassButton';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -32,31 +33,35 @@ export default function LandingPage() {
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-6 px-4">
           {/* Badge */}
-          <div className="bg-[#1a1d27] border border-[#2a2d3a] text-[#6366f1] text-xs rounded-full px-3 py-1">
+          <div className="bg-[#1a1d27]/80 backdrop-blur-md border border-[#2a2d3a] text-[#6366f1] text-xs font-medium uppercase tracking-wider rounded-full px-4 py-1.5 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
             Emotional AI Analysis
           </div>
 
           {/* Heading */}
-          <h1 className="text-5xl font-bold text-white max-w-2xl text-center">
-            Understand Every Emotional State
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white max-w-4xl text-center tracking-tight leading-tight">
+            Understand Every <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Emotional State</span>
           </h1>
 
           {/* Description */}
-          <p className="text-lg text-slate-400 max-w-xl text-center">
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl text-center font-medium">
             Real-time Short, Mid and Long-Term emotional state tracking powered by EMA and PRISM scoring
           </p>
 
           {/* Buttons */}
-          <div className="flex gap-4 mt-4">
-            <button
+          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <GlassButton
               onClick={handleAnalyzeNow}
-              className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg px-6 py-3 transition-colors"
+              size="xl"
+              variant="primary"
             >
               Analyze Now
-            </button>
-            <button className="border border-slate-700 text-white rounded-lg px-6 py-3 bg-transparent hover:bg-slate-800 transition-colors">
+            </GlassButton>
+            <GlassButton 
+              size="xl"
+              variant="secondary"
+            >
               View Docs
-            </button>
+            </GlassButton>
           </div>
         </div>
       </div>
