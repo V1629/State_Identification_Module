@@ -5,6 +5,22 @@
 
 import client from './client';
 
+// ==================== Auth Endpoints ====================
+
+/**
+ * Authenticate with Google
+ * @param {string} credential - Google JWT from GoogleLogin button
+ */
+export const authenticateWithGoogle = async (credential) => {
+  try {
+    const response = await client.post('/api/auth/google', { credential });
+    return response.data;
+  } catch (error) {
+    console.error('Error authenticating with Google:', error);
+    throw error;
+  }
+};
+
 // ==================== Analysis Endpoints ====================
 
 /**

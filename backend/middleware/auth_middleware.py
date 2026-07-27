@@ -24,12 +24,6 @@ async def get_current_user(
 
     Returns the user_id (MongoDB ObjectId as string) from the token.
     Rejects expired or tampered tokens with 401.
-
-    Usage:
-        @router.get("/protected")
-        async def protected_route(user_id: str = Depends(get_current_user)):
-            # user_id is guaranteed to be the authenticated user
-            ...
     """
     token = credentials.credentials
 

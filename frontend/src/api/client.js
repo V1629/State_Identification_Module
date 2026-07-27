@@ -17,7 +17,11 @@ const client = axios.create({
 // Request interceptor
 client.interceptors.request.use(
   (config) => {
-    // Add any auth tokens here if needed
+    // Add auth token if exists
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
