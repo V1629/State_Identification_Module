@@ -52,6 +52,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Load dynamic frontend URL from environment if it exists
+frontend_url = os.getenv("FRONTEND_URL", "https://state-identification-frontend.onrender.com")
+
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
@@ -61,7 +64,7 @@ app.add_middleware(
         "http://localhost:5174", 
         "http://127.0.0.1:5174", 
         "http://localhost:3000", 
-        "https://state-identification-frontend.onrender.com"
+        frontend_url,
     ],
     allow_credentials=True,
     allow_methods=["*"],
