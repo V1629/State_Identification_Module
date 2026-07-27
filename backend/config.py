@@ -15,8 +15,15 @@ class Settings(BaseModel):
     # HuggingFace
     HF_TOKEN: str = os.getenv("HF_TOKEN", "")
     
-    # Database (if needed later)
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    # MongoDB
+    MONGODB_URI: str = os.getenv("MONGODB_URI", "")
+    
+    # JWT Authentication
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "change-me-in-production-use-a-strong-random-key")
+    JWT_EXPIRY_HOURS: int = int(os.getenv("JWT_EXPIRY_HOURS", 72))
+    
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     
     class Config:
         case_sensitive = True

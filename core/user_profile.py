@@ -37,23 +37,23 @@ ALL_EMOTIONS = [
 
 STATE_ACTIVATION_CONFIG = {
     'short_term': {
-        'name': '⚡ Short-term (0-30 days)',
+        'name': '⚡ Short-term',
         'min_days': 0,
         'min_messages': 1,
         'description': 'Recent emotions, always tracking'
     },
     'mid_term': {
-        'name': '📈 Mid-term (31-365 days)',
-        'min_days': 14,
-        'min_messages': 30,
-        'description': 'Patterns over 2 weeks / ~6 msgs per day',
-        'window_size': 15  # Rolling window: look at last 15 messages
+        'name': '📈 Mid-term',
+        'min_days': 0,          # Message-count only (no day requirement)
+        'min_messages': 5,      # DEV: 5 msgs (PROD: 30)
+        'description': 'Patterns across sessions',
+        'window_size': 15       # Rolling window: look at last 15 messages
     },
     'long_term': {
-        'name': '🏛️ Long-term (365+ days)',
-        'min_days': 90,
-        'min_messages': 50,
-        'description': 'Baseline personality over 3 months / ~1.7 msgs per day'
+        'name': '🏛️ Long-term',
+        'min_days': 0,          # Message-count only (no day requirement)
+        'min_messages': 15,     # DEV: 15 msgs (PROD: 50)
+        'description': 'Baseline personality across many sessions'
     }
 }
 
@@ -579,11 +579,252 @@ class UserProfile:
             return [("N/A", 0.0)]
 
     # ============================================================
+    # DECAY ENGINE
+    # ============================================================
+
+    def apply_decay(self, hours_since_last_update: float):
+        """
+        Apply time-based decay to emotional states.
+        Called when loading a profile from DB after a gap.
+
+        Decay rates (from docs/state-management.md):
+          - ST: Fast exponential  Relevance(t) = Initial × e^(-0.3t)
+          - MT: S-curve with 60-day half-life
+          - LT: Asymptotic — never fully decays (no decay applied)
+
+        Args:
+            hours_since_last_update: Hours since profile was last updated
+        """
+        days_elapsed = hours_since_last_update / 24.0
+
+        if days_elapsed < 0.01:  # Less than ~15 minutes — skip
+            return
+
+        # --- Short-Term: Fast exponential decay (λ = 0.3/day) ---
+        # 70% reduction every 2 days, auto-expire by 14 days
+        st_decay_factor = math.exp(-0.3 * days_elapsed)
+        for emotion in ALL_EMOTIONS:
+            self.short_term_state[emotion] *= st_decay_factor
+
+        # --- Mid-Term: S-curve decay (half-life 60 days) ---
+        # Only decay if more than 1 day has passed
+        if days_elapsed > 1.0:
+            k = 0.1   # Steepness of S-curve
+            t_half = 60.0  # Half-life in days
+            mt_decay_factor = 1.0 / (1.0 + math.exp(k * (days_elapsed - t_half)))
+            for emotion in ALL_EMOTIONS:
+                self.mid_term_state[emotion] *= mt_decay_factor
+
+        # --- Long-Term: No decay ---
+        # LT represents permanent baseline, never fully decays
+
+    # ============================================================
+    # COMPOUNDING DETECTION (ST → MT ESCALATION)
+    # ============================================================
+
+    def check_compounding(self):
+        """
+        Check for ST → MT compounding escalation.
+
+        Rule (from docs/state-management.md):
+          If 3+ messages in the current session share a dominant emotion,
+          boost that emotion in the mid-term state.
+
+        This detects patterns like:
+          Day 1: "Traffic stress" (ST)
+          Day 3: "Meeting went bad" (ST)
+          Day 5: "Deadline pressure" (ST)
+          → Escalate: "Work stress pattern" (MT)
+        """
+        if not self.is_state_activated('mid_term'):
+            return
+
+        if len(self.message_history) < 3:
+            return
+
+        # Look at recent messages in current session (up to last 7)
+        recent = self.message_history[-7:]
+
+        # Count dominant emotions across recent messages
+        emotion_counts: Dict[str, int] = {}
+        for msg in recent:
+            emotions = msg.get('emotions_detected', {})
+            if emotions:
+                dominant_emotion = max(emotions.items(), key=lambda x: x[1])[0]
+                emotion_counts[dominant_emotion] = (
+                    emotion_counts.get(dominant_emotion, 0) + 1
+                )
+
+        # If any emotion appears 3+ times, boost it in MT
+        for emotion, count in emotion_counts.items():
+            if count >= 3:
+                boost = 0.05 * (count - 2)  # 5% boost per extra occurrence
+                current = self.mid_term_state.get(emotion, 0.0)
+                self.mid_term_state[emotion] = min(1.0, current + boost)
+
+    # ============================================================
+    # SIGNIFICANCE SCORE (PRISM)
+    # ============================================================
+
+    def calculate_significance_score(
+        self,
+        emotion_intensity: float,
+        impact_score: float,
+    ) -> float:
+        """
+        Calculate PRISM-based significance score.
+
+        From docs/05-core-concepts.md:
+          SS = (0.25 × Intensity) + (0.20 × Persistence)
+             + (0.20 × Recency) + (0.15 × Impact) + (0.20 × Volatility)
+
+        Args:
+            emotion_intensity: From ImpactCalculator (0-1)
+            impact_score: Compound impact score (0-1)
+
+        Returns:
+            Significance score [0, 1]
+        """
+        # Intensity: from emotion detector
+        intensity = emotion_intensity
+
+        # Persistence: based on accumulated message count (capped at 1.0)
+        persistence = min(1.0, self.message_count / 10)
+
+        # Recency: always 1.0 for current message
+        recency = 1.0
+
+        # Impact: from temporal impact calculation
+        impact = impact_score
+
+        # Volatility: standard deviation of recent intensities
+        recent_intensities = []
+        for msg in self.message_history[-5:]:
+            emotions = msg.get('emotions_detected', {})
+            if emotions:
+                recent_intensities.append(max(emotions.values()))
+
+        if len(recent_intensities) >= 2:
+            mean_int = sum(recent_intensities) / len(recent_intensities)
+            variance = sum(
+                (x - mean_int) ** 2 for x in recent_intensities
+            ) / len(recent_intensities)
+            volatility = math.sqrt(variance)
+        else:
+            volatility = 0.0
+
+        # Weighted sum
+        ss = (
+            0.25 * intensity
+            + 0.20 * persistence
+            + 0.20 * recency
+            + 0.15 * impact
+            + 0.20 * volatility
+        )
+
+        return max(0.0, min(1.0, ss))
+
+    # ============================================================
     # SERIALIZATION
     # ============================================================
 
+    def to_db_dict(self) -> Dict[str, Any]:
+        """
+        Convert profile to dict for MongoDB storage.
+        Stores only states and parameters — no message history.
+        """
+        return {
+            'short_term_state': self.short_term_state,
+            'mid_term_state': self.mid_term_state,
+            'long_term_state': self.long_term_state,
+            'message_count': self.message_count,
+            'adaptive_weights': self.adaptive_weights,
+            'weights_learning_enabled': self.weights_learning_enabled,
+            'entropy_penalty_coeff': self.entropy_penalty_coeff,
+            'recurrence_step': self.recurrence_step,
+            'behavior_alpha': self.behavior_alpha,
+            'similarity_threshold': self.similarity_threshold,
+            'impact_multipliers': self.impact_multipliers,
+            'created_at': self.created_at,
+            'last_updated': datetime.now(),
+        }
+
+    @classmethod
+    def from_db_dict(cls, user_id: str, data: dict) -> 'UserProfile':
+        """
+        Create UserProfile from MongoDB document.
+        Restores states and parameters, leaves message_history empty
+        (messages are not persisted — only states are).
+
+        Args:
+            user_id: User identifier (MongoDB ObjectId as string)
+            data: Document from user_states collection
+
+        Returns:
+            Populated UserProfile instance
+        """
+        profile = cls(user_id)
+
+        if not data:
+            return profile
+
+        # Restore emotional states
+        for emotion in ALL_EMOTIONS:
+            profile.short_term_state[emotion] = (
+                data.get('short_term_state', {}).get(emotion, 0.0)
+            )
+            profile.mid_term_state[emotion] = (
+                data.get('mid_term_state', {}).get(emotion, 0.0)
+            )
+            profile.long_term_state[emotion] = (
+                data.get('long_term_state', {}).get(emotion, 0.0)
+            )
+
+        # Restore counts
+        profile.message_count = data.get('message_count', 0)
+
+        # Restore timestamps
+        created_at = data.get('created_at')
+        if created_at:
+            if isinstance(created_at, datetime):
+                profile.created_at = created_at
+            elif isinstance(created_at, str):
+                profile.created_at = datetime.fromisoformat(created_at)
+
+        last_updated = data.get('last_updated')
+        if last_updated:
+            if isinstance(last_updated, datetime):
+                profile.last_updated = last_updated
+            elif isinstance(last_updated, str):
+                profile.last_updated = datetime.fromisoformat(last_updated)
+
+        # Restore adaptive parameters
+        profile.adaptive_weights = data.get(
+            'adaptive_weights', INITIAL_WEIGHTS.copy()
+        )
+        profile.weights_learning_enabled = data.get(
+            'weights_learning_enabled', False
+        )
+        profile.entropy_penalty_coeff = data.get('entropy_penalty_coeff', 0.3)
+        profile.recurrence_step = data.get('recurrence_step', 0.3)
+        profile.behavior_alpha = data.get('behavior_alpha', 0.2)
+        profile.similarity_threshold = data.get('similarity_threshold', 0.2)
+        profile.impact_multipliers = data.get(
+            'impact_multipliers', profile.impact_multipliers
+        )
+
+        # Re-check activation based on restored message_count
+        profile.state_activation_status['mid_term'] = (
+            profile.is_state_activated('mid_term')
+        )
+        profile.state_activation_status['long_term'] = (
+            profile.is_state_activated('long_term')
+        )
+
+        return profile
+
     def to_dict(self) -> Dict[str, Any]:
-        """Convert profile to dictionary"""
+        """Convert profile to dictionary (for API responses)"""
         try:
             activation_info = self.get_state_activation_info()
             

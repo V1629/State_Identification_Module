@@ -3,6 +3,7 @@ Main FastAPI Application
 Integrates state_management_module with HTTP API
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -12,14 +13,34 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .routes import analysis, health
+from .routes import auth
 from .config import settings
+from .database import MongoDB
 
-# Initialize FastAPI app
+
+# ==================== Lifespan (Startup/Shutdown) ====================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifecycle — connect/disconnect MongoDB"""
+    # Startup
+    if settings.MONGODB_URI:
+        await MongoDB.connect(settings.MONGODB_URI)
+    else:
+        print("⚠️  MONGODB_URI not set — database features disabled")
+    yield
+    # Shutdown
+    await MongoDB.disconnect()
+
+
+# ==================== App Initialization ====================
+
 app = FastAPI(
     title="State Identification Module API",
     description="Emotional state analysis and tracking API",
     version="1.0.0",
-    debug = True
+    debug=True,
+    lifespan=lifespan,
 )
 
 # CORS Middleware
@@ -40,6 +61,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router)
+app.include_router(auth.router, prefix="/api")
 app.include_router(analysis.router, prefix="/api")
 
 if __name__ == "__main__":
