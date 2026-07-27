@@ -6,16 +6,20 @@ Integrates state_management_module with HTTP API
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import sys
 import os
 from dotenv import load_dotenv
+
+# Add project root to path so we can import from backend.*
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Load environment variables
 load_dotenv()
 
-from .routes import analysis, health
-from .routes import auth
-from .config import settings
-from .database import MongoDB
+from backend.routes import analysis, health
+from backend.routes import auth
+from backend.config import settings
+from backend.database import MongoDB
 
 
 # ==================== Lifespan (Startup/Shutdown) ====================
@@ -25,7 +29,12 @@ async def lifespan(app: FastAPI):
     """Manage application lifecycle — connect/disconnect MongoDB"""
     # Startup
     if settings.MONGODB_URI:
-        await MongoDB.connect(settings.MONGODB_URI)
+        try:
+            await MongoDB.connect(settings.MONGODB_URI)
+            print("✅ MongoDB connected successfully")
+        except Exception as e:
+            print(f"⚠️  MongoDB connection failed: {e}")
+            print("⚠️  Server starting WITHOUT database — auth/state persistence disabled")
     else:
         print("⚠️  MONGODB_URI not set — database features disabled")
     yield

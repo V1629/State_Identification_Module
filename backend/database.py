@@ -34,7 +34,13 @@ class MongoDB:
                 "See .env.example for setup instructions."
             )
 
-        cls.client = AsyncIOMotorClient(uri)
+        import certifi
+        # Add a 5-second timeout and explicit CA bundle for SSL
+        cls.client = AsyncIOMotorClient(
+            uri,
+            serverSelectionTimeoutMS=5000,
+            tlsCAFile=certifi.where()
+        )
         cls.db = cls.client[db_name]
 
         # Create indexes for performance and uniqueness

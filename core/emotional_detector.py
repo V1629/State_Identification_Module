@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 
 # Load variables from .env file
 load_dotenv()
-HF_TOKEN = os.getenv('hf_token')
+HF_TOKEN = os.getenv('HF_TOKEN') or os.getenv('hf_token')
 
 if not HF_TOKEN:
     print("❌ Error: HF_TOKEN environment variable not set.")
