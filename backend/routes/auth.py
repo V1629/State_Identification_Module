@@ -16,14 +16,18 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from passlib.context import CryptContext
 
 from ..config import settings
 from ..database import (
     create_user,
     get_user_by_google_id,
+    get_user_by_email,
     get_user_by_id,
     update_last_login,
 )
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 from ..middleware.auth_middleware import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -35,6 +39,20 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 class GoogleAuthRequest(BaseModel):
     """Google OAuth credential from frontend"""
     credential: str  # Google ID token from Google Sign-In
+    is_signup: bool = False
+
+
+class RegisterRequest(BaseModel):
+    """Email/Password registration"""
+    name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    """Email/Password login"""
+    email: str
+    password: str
 
 
 class AuthResponse(BaseModel):
@@ -98,10 +116,15 @@ async def google_auth(request: GoogleAuthRequest):
                 detail="Email not provided by Google",
             )
 
-        # Find or create user
-        user = await get_user_by_google_id(google_id)
+        # Check if user exists by email
+        user = await get_user_by_email(email)
 
-        if user is None:
+        if request.is_signup:
+            if user:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="User already exists. Please sign in instead.",
+                )
             # New user — create account
             user = await create_user(
                 google_id=google_id,
@@ -110,6 +133,11 @@ async def google_auth(request: GoogleAuthRequest):
                 picture=picture,
             )
         else:
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Account not found. Please sign up first.",
+                )
             # Existing user — update last login
             await update_last_login(str(user["_id"]))
 
@@ -139,6 +167,67 @@ async def google_auth(request: GoogleAuthRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Authentication failed: {str(e)}",
         )
+
+
+@router.post("/register", response_model=AuthResponse)
+async def register_user(request: RegisterRequest):
+    """Register a new user with Email and Password."""
+    user = await get_user_by_email(request.email)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered. Please sign in instead.",
+        )
+    
+    hashed_password = pwd_context.hash(request.password)
+    user = await create_user(
+        email=request.email,
+        name=request.name,
+        password_hash=hashed_password
+    )
+    
+    token = create_access_token(str(user["_id"]))
+    return AuthResponse(
+        token=token,
+        user={
+            "id": str(user["_id"]),
+            "email": request.email,
+            "name": request.name,
+            "picture": "",
+        },
+    )
+
+
+@router.post("/login", response_model=AuthResponse)
+async def login_user(request: LoginRequest):
+    """Login with Email and Password."""
+    user = await get_user_by_email(request.email)
+    
+    if not user or not user.get("password_hash"):
+        # If user exists but no password_hash, they probably signed up via Google
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+        
+    if not pwd_context.verify(request.password, user["password_hash"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+        
+    await update_last_login(str(user["_id"]))
+    token = create_access_token(str(user["_id"]))
+    
+    return AuthResponse(
+        token=token,
+        user={
+            "id": str(user["_id"]),
+            "email": user.get("email", ""),
+            "name": user.get("name", ""),
+            "picture": user.get("picture", ""),
+        },
+    )
 
 
 @router.get("/me")

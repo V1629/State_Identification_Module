@@ -74,16 +74,21 @@ class MongoDB:
 # ==========================================================
 
 async def create_user(
-    google_id: str, email: str, name: str, picture: str = ""
+    email: str, 
+    name: str, 
+    google_id: Optional[str] = None, 
+    picture: str = "",
+    password_hash: Optional[str] = None
 ) -> dict:
     """
-    Create a new user from Google OAuth data.
+    Create a new user from Google OAuth data or Email/Password registration.
 
     Args:
-        google_id: Google's unique user ID (sub claim)
-        email: User's email from Google
-        name: Display name from Google
-        picture: Profile picture URL from Google
+        email: User's email
+        name: Display name
+        google_id: Google's unique user ID (sub claim) - optional
+        picture: Profile picture URL - optional
+        password_hash: Hashed password for email auth - optional
 
     Returns:
         Created user document with _id
@@ -91,13 +96,17 @@ async def create_user(
     db = MongoDB.get_db()
 
     user_doc = {
-        "google_id": google_id,
         "email": email,
         "name": name,
         "picture": picture,
         "created_at": datetime.utcnow(),
         "last_login": datetime.utcnow(),
     }
+    
+    if google_id:
+        user_doc["google_id"] = google_id
+    if password_hash:
+        user_doc["password_hash"] = password_hash
 
     result = await db.users.insert_one(user_doc)
     user_doc["_id"] = result.inserted_id
@@ -108,6 +117,12 @@ async def get_user_by_google_id(google_id: str) -> Optional[dict]:
     """Find user by Google ID"""
     db = MongoDB.get_db()
     return await db.users.find_one({"google_id": google_id})
+
+
+async def get_user_by_email(email: str) -> Optional[dict]:
+    """Find user by Email"""
+    db = MongoDB.get_db()
+    return await db.users.find_one({"email": email})
 
 
 async def get_user_by_id(user_id: str) -> Optional[dict]:
