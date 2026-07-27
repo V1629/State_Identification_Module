@@ -680,6 +680,10 @@ class EmotionalStateOrchestrator:
             temporal_category=age_category
         )
         
+        # Check for ST → MT compounding escalation
+        # (3+ recent messages sharing a dominant emotion boosts MT)
+        profile.check_compounding()
+        
         # ==============================================================
         # STEP 7b: UPDATE PER-USER EMA PARAMETERS
         # ==============================================================

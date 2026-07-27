@@ -58,3 +58,4 @@ ecdsa==0.19.2
 rsa==4.9.1
 pyasn1==0.6.4
 pyasn1_modules==0.4.2
+requests==2.34.2
