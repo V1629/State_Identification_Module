@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 
 // Get Google Client ID from env
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route 
               path="/dashboard" 
               element={

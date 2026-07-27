@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, UserPlus, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import Lightfall from '../components/Lightfall';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const navigate = useNavigate();
-  const { user, loginWithGoogle, loginWithEmail } = useAuth();
+  const { user, loginWithGoogle, register } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,15 +23,15 @@ export default function LoginPage() {
     }
   }, [user, navigate]);
 
-  const handleEmailLogin = async (e) => {
+  const handleEmailSignup = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await loginWithEmail(email, password);
+      await register(name, email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -38,10 +39,10 @@ export default function LoginPage() {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      await loginWithGoogle(credentialResponse.credential, false); // false = isSignup
+      await loginWithGoogle(credentialResponse.credential, true); // true = isSignup
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Google Login failed. Please try again.');
+      setError(err.response?.data?.detail || 'Google Signup failed. Please try again.');
     }
   };
 
@@ -69,12 +70,12 @@ export default function LoginPage() {
         <GlassCard className="animate-in fade-in slide-in-from-bottom-8 duration-1000 flex flex-col items-center py-10 px-8 border border-white/10 shadow-2xl backdrop-blur-2xl bg-[#1a1d27]/70">
           
           <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.2)] mb-6">
-            <LogIn className="w-8 h-8 text-indigo-400" />
+            <UserPlus className="w-8 h-8 text-indigo-400" />
           </div>
           
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Welcome Back</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Create Account</h1>
           <p className="text-slate-400 text-sm mb-8 text-center leading-relaxed">
-            Sign in to access your emotional state tracking dashboard.
+            Join us to start tracking and analyzing your emotional states.
           </p>
 
           {error && (
@@ -83,7 +84,19 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailLogin} className="w-full flex flex-col gap-4 mb-6">
+          <form onSubmit={handleEmailSignup} className="w-full flex flex-col gap-4 mb-6">
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full Name"
+                required
+                className="w-full bg-[#0f1117]/50 border border-[#2a2d3a] rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              />
+            </div>
+
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
@@ -109,7 +122,7 @@ export default function LoginPage() {
             </div>
 
             <GlassButton type="submit" variant="primary" className="w-full justify-center mt-2" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Creating account...' : 'Sign Up'}
             </GlassButton>
           </form>
 
@@ -122,16 +135,16 @@ export default function LoginPage() {
           <div className="w-full flex justify-center mb-6">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => setError('Google Login Failed')}
+              onError={() => setError('Google Signup Failed')}
               theme="filled_black"
               shape="pill"
             />
           </div>
 
           <p className="text-slate-400 text-sm">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
-              Sign up
+            Already have an account?{' '}
+            <Link to="/login" className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium">
+              Sign in
             </Link>
           </p>
 

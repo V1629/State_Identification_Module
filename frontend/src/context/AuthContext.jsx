@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { authenticateWithGoogle } from '../api/endpoints';
+import { authenticateWithGoogle, authenticateWithEmail, registerWithEmail } from '../api/endpoints';
 
 const AuthContext = createContext();
 
@@ -25,18 +25,40 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const loginWithGoogle = async (credential) => {
+  const _handleAuthSuccess = (data) => {
+    const { token, user: userData } = data;
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_user', JSON.stringify(userData));
+    setUser(userData);
+    return userData;
+  };
+
+  const loginWithGoogle = async (credential, isSignup = false) => {
     try {
-      const data = await authenticateWithGoogle(credential);
-      const { token, user: userData } = data;
-      
-      localStorage.setItem('auth_token', token);
-      localStorage.setItem('auth_user', JSON.stringify(userData));
-      
-      setUser(userData);
-      return userData;
+      const data = await authenticateWithGoogle(credential, isSignup);
+      return _handleAuthSuccess(data);
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Google Auth failed:', error);
+      throw error;
+    }
+  };
+
+  const loginWithEmail = async (email, password) => {
+    try {
+      const data = await authenticateWithEmail(email, password);
+      return _handleAuthSuccess(data);
+    } catch (error) {
+      console.error('Email login failed:', error);
+      throw error;
+    }
+  };
+
+  const register = async (name, email, password) => {
+    try {
+      const data = await registerWithEmail(name, email, password);
+      return _handleAuthSuccess(data);
+    } catch (error) {
+      console.error('Registration failed:', error);
       throw error;
     }
   };
@@ -48,7 +70,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, loginWithEmail, register, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

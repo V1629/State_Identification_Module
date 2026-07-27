@@ -10,13 +10,40 @@ import client from './client';
 /**
  * Authenticate with Google
  * @param {string} credential - Google JWT from GoogleLogin button
+ * @param {boolean} isSignup - Whether this is a registration attempt
  */
-export const authenticateWithGoogle = async (credential) => {
+export const authenticateWithGoogle = async (credential, isSignup = false) => {
   try {
-    const response = await client.post('/api/auth/google', { credential });
+    const response = await client.post('/api/auth/google', { credential, is_signup: isSignup });
     return response.data;
   } catch (error) {
     console.error('Error authenticating with Google:', error);
+    throw error;
+  }
+};
+
+/**
+ * Register with Email and Password
+ */
+export const registerWithEmail = async (name, email, password) => {
+  try {
+    const response = await client.post('/api/auth/register', { name, email, password });
+    return response.data;
+  } catch (error) {
+    console.error('Error registering with email:', error);
+    throw error;
+  }
+};
+
+/**
+ * Login with Email and Password
+ */
+export const authenticateWithEmail = async (email, password) => {
+  try {
+    const response = await client.post('/api/auth/login', { email, password });
+    return response.data;
+  } catch (error) {
+    console.error('Error logging in with email:', error);
     throw error;
   }
 };
