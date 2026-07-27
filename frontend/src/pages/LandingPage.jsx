@@ -29,6 +29,16 @@ export default function LandingPage() {
         />
       </div>
 
+      {/* Top Header for Auth */}
+      <div className="absolute top-0 left-0 w-full p-6 flex justify-end gap-4 z-20">
+        <GlassButton variant="secondary" onClick={() => navigate('/login')}>
+          Sign In
+        </GlassButton>
+        <GlassButton variant="primary" onClick={() => navigate('/signup')}>
+          Sign Up
+        </GlassButton>
+      </div>
+
       {/* Content */}
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-6 px-4">

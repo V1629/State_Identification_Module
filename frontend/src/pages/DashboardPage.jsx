@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { Textarea } from '../components/ui/textarea';
+import Lightfall from '../components/Lightfall';
 import { useAnalyze } from '../hooks/useAnalyze';
 import { useEmaScores } from '../hooks/useEmaScores';
 import { useStates } from '../hooks/useStates';
@@ -35,7 +36,25 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex h-screen mesh-bg text-slate-100 overflow-hidden font-sans">
+    <div className="relative flex h-screen bg-[#0f1117] text-slate-100 overflow-hidden font-sans">
+      {/* Lightfall Background */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+        <Lightfall
+          colors={['#6366f1', '#818cf8', '#4f46e5']}
+          backgroundColor="#0f1117"
+          speed={0.4}
+          streakCount={3}
+          streakWidth={1}
+          streakLength={1}
+          glow={0.8}
+          density={0.3}
+          opacity={0.4}
+          mouseInteraction={true}
+          mouseStrength={0.3}
+          mouseRadius={1}
+        />
+      </div>
+
       {/* Sidebar - Glassmorphism */}
       <div className="fixed left-0 top-0 h-screen w-64 glass-panel border-l-0 rounded-l-none border-y-0 bg-white/5 dark:bg-[#0f1117]/30 flex flex-col z-20">
         {/* Header */}
@@ -97,7 +116,7 @@ export default function DashboardPage() {
           {/* Section 1: Stat Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Short-Term State */}
-            <GlassCard className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col justify-between">
+            <GlassCard className="opacity-0 animate-fade-up flex flex-col justify-between" style={{ animationDelay: '150ms' }}>
               <div>
                 <p className="text-slate-400/80 text-sm font-medium uppercase tracking-wider mb-2">Short-Term State</p>
                 <p className="text-white text-3xl font-bold mb-4 tracking-tight">
@@ -110,7 +129,7 @@ export default function DashboardPage() {
             </GlassCard>
 
             {/* Mid-Term State */}
-            <GlassCard className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col justify-between">
+            <GlassCard className="opacity-0 animate-fade-up flex flex-col justify-between" style={{ animationDelay: '300ms' }}>
               <div>
                 <p className="text-slate-400/80 text-sm font-medium uppercase tracking-wider mb-2">Mid-Term State</p>
                 <p className="text-white text-3xl font-bold mb-4 tracking-tight">
@@ -123,7 +142,7 @@ export default function DashboardPage() {
             </GlassCard>
 
             {/* Long-Term State */}
-            <GlassCard className="animate-in fade-in slide-in-from-bottom-4 duration-1000 flex flex-col justify-between">
+            <GlassCard className="opacity-0 animate-fade-up flex flex-col justify-between" style={{ animationDelay: '450ms' }}>
               <div>
                 <p className="text-slate-400/80 text-sm font-medium uppercase tracking-wider mb-2">Long-Term State</p>
                 <p className="text-white text-3xl font-bold mb-4 tracking-tight">
@@ -137,7 +156,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Section 2: EMA Score Chart */}
-          <GlassCard className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-100">
+          <GlassCard className="opacity-0 animate-fade-up" style={{ animationDelay: '600ms' }}>
             <h3 className="text-white font-semibold text-lg tracking-tight mb-6">EMA Score Timeline</h3>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -205,7 +224,7 @@ export default function DashboardPage() {
           {/* Section 3: Two Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
             {/* Message Input Card */}
-            <GlassCard className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+            <GlassCard className="opacity-0 animate-fade-up" style={{ animationDelay: '750ms' }}>
               <label className="text-slate-300 font-medium text-sm block mb-4">Analyze New Interaction</label>
               <Textarea
                 value={message}
@@ -231,7 +250,7 @@ export default function DashboardPage() {
             </GlassCard>
 
             {/* Significance Score Card */}
-            <GlassCard className="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 flex flex-col justify-center items-center text-center relative overflow-hidden group">
+            <GlassCard className="opacity-0 animate-fade-up flex flex-col justify-center items-center text-center relative overflow-hidden group" style={{ animationDelay: '900ms' }}>
               {/* Subtle background glow effect */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-rose-500/20 rounded-full blur-[60px] group-hover:bg-rose-500/30 transition-all duration-700"></div>
               
