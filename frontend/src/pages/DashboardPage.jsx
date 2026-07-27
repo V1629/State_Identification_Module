@@ -6,23 +6,14 @@ import { Textarea } from '../components/ui/textarea';
 import { useAnalyze } from '../hooks/useAnalyze';
 import { useEmaScores } from '../hooks/useEmaScores';
 import { useStates } from '../hooks/useStates';
-
-const chartData = [
-  { time: '00:00', shortTerm: 5.2, midTerm: 5.0, longTerm: 5.1 },
-  { time: '04:00', shortTerm: 6.1, midTerm: 5.3, longTerm: 5.2 },
-  { time: '08:00', shortTerm: 7.4, midTerm: 6.2, longTerm: 5.5 },
-  { time: '12:00', shortTerm: 6.8, midTerm: 6.5, longTerm: 5.8 },
-  { time: '16:00', shortTerm: 7.2, midTerm: 6.8, longTerm: 6.1 },
-  { time: '20:00', shortTerm: 6.5, midTerm: 6.7, longTerm: 6.2 },
-  { time: '23:00', shortTerm: 7.4, midTerm: 7.0, longTerm: 6.5 },
-  { time: '24:00', shortTerm: 7.4, midTerm: 7.1, longTerm: 6.6 },
-];
+import { useAuth } from '../context/AuthContext';
 
 export default function DashboardPage() {
+  const { user, logout } = useAuth();
   const [message, setMessage] = useState('');
   const { analyze, loading: analyzing, error: analyzeError, result } = useAnalyze();
-  const { states, loading: statesLoading } = useStates();
-  const { data, chartData: emaChartData, loading: chartLoading } = useEmaScores();
+  const { states, loading: statesLoading, refetch: refetchStates } = useStates();
+  const { data: chartData, loading: chartLoading, refetch: refetchEmaScores } = useEmaScores();
 
   const handleAnalyze = async () => {
     if (!message.trim()) {
@@ -33,6 +24,11 @@ export default function DashboardPage() {
     try {
       await analyze(message);
       setMessage(''); // Clear input after successful analysis
+      // Refresh the states and graph data dynamically!
+      await Promise.all([
+        refetchStates(),
+        refetchEmaScores()
+      ]);
     } catch (err) {
       console.error('Analysis failed:', err);
     }
@@ -75,9 +71,24 @@ export default function DashboardPage() {
         {/* Topbar */}
         <div className="sticky top-0 z-30 px-8 py-5 flex justify-between items-center glass-panel border-x-0 border-t-0 rounded-none bg-white/5 dark:bg-[#0f1117]/30 backdrop-blur-xl">
           <h2 className="text-white font-semibold text-xl tracking-tight">Emotional State Dashboard</h2>
-          <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-300 text-xs font-medium rounded-full px-4 py-1.5 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.8)]"></div>
-            System Active
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-300 text-xs font-medium rounded-full px-4 py-1.5 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.8)]"></div>
+              System Active
+            </div>
+            {user && (
+              <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                {user.picture ? (
+                  <img src={user.picture} alt="Profile" className="w-8 h-8 rounded-full border border-indigo-500/30" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-xs">{user.name?.charAt(0)}</div>
+                )}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-white">{user.name}</span>
+                  <button onClick={logout} className="text-xs text-slate-400 hover:text-rose-400 text-left transition-colors">Sign out</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

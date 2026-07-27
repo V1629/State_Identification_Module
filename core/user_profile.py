@@ -45,14 +45,14 @@ STATE_ACTIVATION_CONFIG = {
     'mid_term': {
         'name': '📈 Mid-term',
         'min_days': 0,          # Message-count only (no day requirement)
-        'min_messages': 5,      # DEV: 5 msgs (PROD: 30)
+        'min_messages': 3,      # DEV: 3 msgs (PROD: 30)
         'description': 'Patterns across sessions',
         'window_size': 15       # Rolling window: look at last 15 messages
     },
     'long_term': {
         'name': '🏛️ Long-term',
         'min_days': 0,          # Message-count only (no day requirement)
-        'min_messages': 15,     # DEV: 15 msgs (PROD: 50)
+        'min_messages': 8,      # DEV: 8 msgs (PROD: 50)
         'description': 'Baseline personality across many sessions'
     }
 }
@@ -316,8 +316,8 @@ class UserProfile:
             
             # ===== EMA-BASED STATE UPDATES =====
             short_term_learning_rate = get_effective_alpha(0.30, self.message_count)
-            mid_term_learning_rate = get_effective_alpha(0.125, self.message_count)
-            long_term_learning_rate = get_effective_alpha(0.02, self.message_count)
+            mid_term_learning_rate = get_effective_alpha(0.20, self.message_count)
+            long_term_learning_rate = get_effective_alpha(0.06, self.message_count)
 
             for emotion in ALL_EMOTIONS:
                 short_term_impact_value = 0.0
