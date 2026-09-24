@@ -752,7 +752,7 @@ class EmotionalStateOrchestrator:
             )
         
         # Update similarity_threshold (Parameter 14)
-        # Only update when there are actual repetitions to avoid driving toward 0
+        # Only update when there are actual repetitions to avoid driving toward 
         average_similarity = repetition_info.get('average_similarity', 0.0)
         if average_similarity > 0:
             similarity_learning_rate = get_effective_alpha(0.10, profile.message_count)

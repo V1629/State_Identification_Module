@@ -1,7 +1,7 @@
 """
 Multilingual Emotion Detector
-Uses AnasAlokla/multilingual_go_emotions model
-Supports English, Hindi, and Hinglish
+Uses SamLowe/roberta-base-go_emotions model
+Supports English text emotion classification (28 GoEmotions labels)
 """
 
 import os
@@ -33,7 +33,7 @@ except Exception as e:
     print(f"❌ Error initializing HuggingFace client: {e}")
     sys.exit(1)
 
-MODEL_NAME = "AnasAlokla/multilingual_go_emotions"
+MODEL_NAME = "SamLowe/roberta-base-go_emotions"
 
 
 # ==========================================
@@ -66,8 +66,8 @@ def classify_emotions(text: str) -> Dict[str, float]:
         # Convert list to dictionary
         emotions_with_scores = {}
         for emotion_item in classification_result:
-            emotion_name = emotion_item['label']
-            emotion_probability = emotion_item['score']
+            emotion_name = getattr(emotion_item, 'label', None) or (emotion_item['label'] if isinstance(emotion_item, dict) else '')
+            emotion_probability = getattr(emotion_item, 'score', None) or (emotion_item['score'] if isinstance(emotion_item, dict) else 0.0)
             emotions_with_scores[emotion_name] = emotion_probability
         
         return emotions_with_scores
