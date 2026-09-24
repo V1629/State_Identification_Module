@@ -60,3 +60,4 @@ pyasn1==0.6.4
 pyasn1_modules==0.4.2
 requests==2.34.2
 passlib[bcrypt]
+bcrypt==4.0.1

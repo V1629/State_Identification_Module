@@ -44,7 +44,7 @@ class MongoDB:
         cls.db = cls.client[db_name]
 
         # Create indexes for performance and uniqueness
-        await cls.db.users.create_index("google_id", unique=True)
+        await cls.db.users.create_index("google_id", unique=True, sparse=True)
         await cls.db.users.create_index("email", unique=True)
         await cls.db.user_states.create_index("user_id", unique=True)
 
